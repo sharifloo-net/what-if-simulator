@@ -35,6 +35,35 @@
             "type": "image/png"
         }
     ],
+    "share_target": {
+        "action": "/what-if-simulator/share/",
+        "method": "GET",
+        "params": {
+            "title": "title",
+            "text": "text",
+            "url": "url"
+        }
+    },
+    "file_handlers": [
+        {
+            "action": "/what-if-simulator/import",
+            "accept": {
+                "application/json": [".json"]
+            },
+            "name": "What If Scenario"
+        }
+    ],
+    "handle_links": "preferred",
+    "launch_handler": {
+        "client_mode": ["auto", "navigate-new", "focus-existing"]
+    },
+    "edge_side_panel": {
+        "preferred_width": 360
+    },
+    "permissions": [
+        "clipboard-write",
+        "clipboard-read"
+    ],
     "categories": ["education", "entertainment", "utilities"],
     "lang": "en-US",
     "dir": "ltr"
