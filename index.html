@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Explore hypothetical scenarios and their consequences across daily life, economy, technology, and society">
+    <meta name="theme-color" content="#6366f1">
+    <title>What If? Simulator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6366f1">
+</head>
+<body>
+    <header class="header">
+        <h1 class="header__title">What If? Simulator</h1>
+        <div class="header__search">
+            <input type="text" id="searchInput" placeholder="Search scenarios..." aria-label="Search scenarios">
+        </div>
+    </header>
+
+    <main class="main">
+        <aside class="sidebar">
+            <div class="sidebar__section">
+                <label for="scenarioSelect" class="sidebar__label">Select Scenario</label>
+                <select id="scenarioSelect" class="sidebar__select"></select>
+            </div>
+
+            <div class="sidebar__section">
+                <p class="sidebar__label">Quick Access</p>
+                <div id="scenarioButtons" class="scenario-buttons"></div>
+            </div>
+
+            <div class="sidebar__section sidebar__actions">
+                <button id="createBtn" class="btn btn--primary">Create Custom</button>
+                <button id="generateBtn" class="btn btn--secondary">Generate with AI</button>
+            </div>
+
+            <div class="sidebar__section sidebar__actions">
+                <button id="exportBtn" class="btn btn--outline">Export JSON</button>
+                <button id="importBtn" class="btn btn--outline">Import JSON</button>
+                <input type="file" id="importFile" accept=".json" hidden>
+            </div>
+
+            <div class="sidebar__section">
+                <button id="favToggle" class="btn btn--favorite">
+                    <span id="favIcon">☆</span> Add to Favorites
+                </button>
+            </div>
+        </aside>
+
+        <section id="viewer" class="viewer">
+            <div class="viewer__header">
+                <h2 id="scenarioTitle" class="viewer__title">Select a scenario</h2>
+                <p id="scenarioSeed" class="viewer__seed"></p>
+            </div>
+            <div id="sectionCards" class="section-cards"></div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer__stats">
+            <span>Total: <strong id="totalCount">0</strong></span>
+            <span>Favorites: <strong id="favCount">0</strong></span>
+        </div>
+        <div id="offlineIndicator" class="footer__offline hidden">
+            <span class="offline-dot"></span> Offline Mode
+        </div>
+    </footer>
+
+    <div id="customModal" class="modal hidden">
+        <div class="modal__content">
+            <h3 class="modal__title">Create Custom Scenario</h3>
+            <div class="modal__field">
+                <label for="customTitle">Title</label>
+                <input type="text" id="customTitle" placeholder="e.g., Humans can fly">
+            </div>
+            <div class="modal__field">
+                <label for="customSeed">Description (Seed)</label>
+                <textarea id="customSeed" placeholder="Describe the scenario in detail..."></textarea>
+            </div>
+            <div class="modal__actions">
+                <button id="cancelModal" class="btn btn--outline">Cancel</button>
+                <button id="saveCustom" class="btn btn--primary">Save Scenario</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="aiModal" class="modal hidden">
+        <div class="modal__content">
+            <h3 class="modal__title">Generate with AI</h3>
+            <div class="modal__field">
+                <label for="aiPrompt">Scenario Prompt</label>
+                <input type="text" id="aiPrompt" placeholder="e.g., Humans live underwater">
+            </div>
+            <div class="modal__field">
+                <label for="aiEndpoint">LLM Endpoint (optional)</label>
+                <input type="text" id="aiEndpoint" placeholder="https://api.example.com/generate">
+            </div>
+            <p class="modal__note">If AI generation fails, a fallback generator will be used.</p>
+            <div class="modal__actions">
+                <button id="cancelAiModal" class="btn btn--outline">Cancel</button>
+                <button id="generateAi" class="btn btn--primary">Generate</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-spinner"></div>
+        <p>Generating scenario...</p>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
