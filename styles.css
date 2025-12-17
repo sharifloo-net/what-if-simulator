@@ -79,22 +79,349 @@ body {
     height: fit-content;
     position: sticky;
     top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: calc(100vh - 3rem);
+    overflow-y: auto;
 }
 
 .sidebar__section {
-    margin-bottom: 1.25rem;
+    margin-bottom: 0;
+    padding: 0.75rem;
+    border-radius: var(--radius);
+    background: rgba(99, 102, 241, 0.03);
+    border: 1px solid var(--border);
 }
 
 .sidebar__section:last-child {
     margin-bottom: 0;
 }
 
+.sidebar__section.all-scenarios {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 200px;
+    max-height: 400px;
+    overflow: hidden;
+}
+
+.all-scenarios .scenario-buttons {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-right: 0.5rem;
+    margin-right: -0.5rem;
+}
+
+.all-scenarios .scenario-btn {
+    flex-shrink: 0;
+    width: 100%;
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.all-scenarios .scenario-btn:hover {
+    background: var(--background);
+    border-color: var(--primary);
+}
+
+.all-scenarios .scenario-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.all-scenarios .scenario-btn__title {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.all-scenarios .scenario-btn__favorite {
+    color: var(--warning);
+    margin-left: 0.5rem;
+}
+
+.scenario-buttons {
+    flex: 1;
+    overflow-y: auto;
+    margin-top: 0.5rem;
+    padding-right: 0.25rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) transparent;
+}
+
+.scenario-buttons::-webkit-scrollbar {
+    width: 4px;
+}
+
+.scenario-buttons::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scenario-buttons::-webkit-scrollbar-thumb {
+    background-color: var(--primary);
+    border-radius: 4px;
+}
+
+.sidebar__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.sidebar__title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.favorites .sidebar__title {
+    color: #d97706;
+}
+
+/* Favorites Section */
+.favorites {
+    background: rgba(245, 158, 11, 0.05);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.favorites .scenario-buttons {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 0.5rem;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Empty state styles */
+.favorites .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1.5rem 1rem;
+    color: var(--text-muted);
+    flex: 1;
+}
+
+.favorites .empty-state__icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    color: var(--border);
+    margin-bottom: 0.75rem;
+}
+
+.favorites .empty-state__text {
+    font-size: 0.875rem;
+    line-height: 1.4;
+    max-width: 200px;
+    margin: 0;
+}
+
+.favorites .scenario-btn {
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.favorites .scenario-btn__favorite {
+    position: absolute;
+    left: 0.5rem;
+    color: #f59e0b; /* Amber-500 */
+}
+
+/* Notification */
+.notification {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background-color: var(--primary);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    opacity: 0;
+    transition: all 0.3s ease-in-out;
+    pointer-events: none;
+}
+
+.notification.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+/* Favorite button */
+.btn--favorite {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    color: white;
+    border: none;
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin-top: 0.5rem;
+}
+
+.btn--favorite:hover {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.btn--favorite:active {
+    transform: translateY(0);
+}
+
+/* Scrollbar for favorites */
+.scenario-buttons::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scenario-buttons::-webkit-scrollbar-track {
+    background: var(--background);
+    border-radius: 3px;
+}
+
+.scenario-buttons::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+}
+
+.scenario-buttons::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* Quick Access and Favorites Sections */
+.quick-access,
+.favorites {
+    background: rgba(245, 158, 11, 0.05);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.all-scenarios {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.quick-access__header,
+.favorites__header,
+.all-scenarios__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.quick-access__title,
+.favorites__title,
+.all-scenarios__title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.quick-access__actions,
+.favorites__actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.quick-access__filter,
+.favorites__filter {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    padding: 0.25rem;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    width: 24px;
+    height: 24px;
+}
+
+.quick-access__filter:hover {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--primary);
+}
+
+.favorites__filter:hover {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+}
+
+.quick-access__filter.active {
+    color: var(--primary);
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.favorites__filter.active {
+    color: var(--warning);
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.quick-access__filter:focus,
+.favorites__filter:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+}
+
 .sidebar__label {
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
+    letter-spacing: 0.05em;
     color: var(--text-muted);
-    margin-bottom: 0.5rem;
+    margin: 0;
     display: block;
 }
 
@@ -114,35 +441,134 @@ body {
 }
 
 .scenario-buttons {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
 .scenario-btn {
-    padding: 0.375rem 0.75rem;
+    position: relative;
+    padding: 0.5rem 0.75rem;
     border: 1px solid var(--border);
-    border-radius: 20px;
-    background: var(--surface);
-    font-size: 0.75rem;
+    border-radius: 6px;
+    background: var(--background);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text);
     cursor: pointer;
-    transition: all var(--transition);
-    white-space: nowrap;
+    transition: all 0.15s ease;
+    text-align: left;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 100%;
+    white-space: nowrap;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-bottom: 0.375rem;
+}
+
+.scenario-btn:last-child {
+    margin-bottom: 0;
+}
+
+.favorites .scenario-btn {
+    background: rgba(245, 158, 11, 0.05);
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.favorites .scenario-btn:hover {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.5);
+}
+
+.scenario-btn__favorite {
+    color: var(--warning);
+    font-size: 0.9em;
+    margin-left: 0.25rem;
+}
+
+.scenario-btn__remove {
+    opacity: 0;
+    visibility: hidden;
+    position: absolute;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+}
+
+.scenario-btn-container:hover .scenario-btn__remove {
+    opacity: 1;
+    visibility: visible;
+}
+
+.scenario-btn__remove:hover {
+    color: var(--danger);
+    background: rgba(239, 68, 68, 0.1);
 }
 
 .scenario-btn:hover {
-    background: var(--primary);
-    color: white;
+    background: var(--background);
     border-color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.scenario-btn:active {
+    transform: translateY(0);
 }
 
 .scenario-btn.active {
     background: var(--primary);
-    color: white;
     border-color: var(--primary);
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
+    padding-right: 2rem;
+}
+
+.scenario-btn.active .scenario-btn__favorite {
+    color: white;
+}
+
+/* Empty state */
+.empty-state {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    text-align: center;
+    padding: 1rem 0;
+    font-style: italic;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .main {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        position: static;
+        margin-bottom: 1.5rem;
+    }
+
+    .quick-access,
+    .favorites,
+    .all-scenarios {
+        margin-bottom: 1rem;
+    }
 }
 
 .sidebar__actions {
@@ -331,12 +757,82 @@ body {
     height: 8px;
     background: var(--warning);
     border-radius: 50%;
-    animation: pulse 2s infinite;
 }
 
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+.scenario-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.scenario-btn {
+    flex: 1;
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.scenario-delete {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    margin-left: 0.25rem;
+    border-radius: var(--radius);
+    opacity: 0;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+}
+
+.scenario-item:hover .scenario-delete {
+    opacity: 1;
+}
+
+.scenario-delete:hover {
+    color: var(--danger);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.favorites .scenario-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 210px; /* 3 items × 60px each + gap */
+    overflow-y: auto;
+    padding-right: 0.5rem;
+    margin: 0;
+    list-style: none;
+}
+
+.favorites .scenario-item {
+    margin-bottom: 0.25rem;
+    height: 56px; /* Fixed height for each item */
+    display: flex;
+    align-items: center;
+}
+
+.all-scenarios .scenario-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 360px; /* 6 items × 60px each */
+    overflow-y: auto;
+    padding-right: 0.5rem;
 }
 
 .modal {
@@ -436,7 +932,9 @@ body {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .hidden {

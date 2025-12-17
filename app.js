@@ -380,23 +380,21 @@ const BUILT_IN_SCENARIOS = [
 
 let scenarios = [];
 let currentScenarioId = null;
+let showFavoritesOnly = false;
+let showQuickAccessOnly = false;
+let quickAccessScenarios = JSON.parse(localStorage.getItem('quickAccessScenarios') || '[]');
 
 const elements = {
 	searchInput: document.getElementById('searchInput'),
 	scenarioSelect: document.getElementById('scenarioSelect'),
 	scenarioButtons: document.getElementById('scenarioButtons'),
-	generateBtn: document.getElementById('generateBtn'),
-	exportBtn: document.getElementById('exportBtn'),
-	importBtn: document.getElementById('importBtn'),
-	importFile: document.getElementById('importFile'),
-	favToggle: document.getElementById('favToggle'),
-	favIcon: document.getElementById('favIcon'),
-	viewer: document.getElementById('viewer'),
+	favFilterIcon: document.getElementById('favFilterIcon'),
 	scenarioTitle: document.getElementById('scenarioTitle'),
 	scenarioSeed: document.getElementById('scenarioSeed'),
 	sectionCards: document.getElementById('sectionCards'),
 	totalCount: document.getElementById('totalCount'),
 	favCount: document.getElementById('favCount'),
+	favoritesList: document.getElementById('favoritesList'),
 	offlineIndicator: document.getElementById('offlineIndicator'),
 	aiModal: document.getElementById('aiModal'),
 	aiPrompt: document.getElementById('aiPrompt'),
@@ -404,7 +402,14 @@ const elements = {
 	aiModel: document.getElementById('aiModel'),
 	cancelAiModal: document.getElementById('cancelAiModal'),
 	generateAi: document.getElementById('generateAi'),
-	loadingOverlay: document.getElementById('loadingOverlay')
+	loadingOverlay: document.getElementById('loadingOverlay'),
+	generateBtn: document.getElementById('generateBtn'),
+	exportBtn: document.getElementById('exportBtn'),
+	importBtn: document.getElementById('importBtn'),
+	importFile: document.getElementById('importFile'),
+	favToggle: document.getElementById('favToggle'),
+	favIcon: document.getElementById('favIcon'),
+	viewer: document.getElementById('viewer')
 };
 
 function init() {
@@ -447,10 +452,63 @@ function renderScenarioSelect(filter = '') {
 }
 
 function renderScenarioButtons() {
-	const displayScenarios = scenarios.slice(0, 6);
-	elements.scenarioButtons.innerHTML = displayScenarios.map(s =>
-		`<button class="scenario-btn ${s.id === currentScenarioId ? 'active' : ''}" data-id="${s.id}">${truncateText(s.title, 20)}</button>`
-	).join('');
+	// Always show favorites section with empty state if needed
+	const favoriteScenarios = scenarios.filter(s => s.favorite);
+
+	if (favoriteScenarios.length > 0) {
+		elements.favoritesList.innerHTML = favoriteScenarios.map(s => `
+            <div class="scenario-item">
+                <button class="scenario-btn ${s.id === currentScenarioId ? 'active' : ''}" data-id="${s.id}" aria-label="${s.title}">
+                    <span class="scenario-btn__title">${truncateText(s.title, 18)}</span>
+                    <span class="scenario-btn__favorite" aria-hidden="true">★</span>
+                </button>
+                <button class="scenario-delete" data-id="${s.id}" aria-label="Delete scenario">×</button>
+            </div>
+        `).join('');
+	} else {
+		elements.favoritesList.innerHTML = `
+            <div class="empty-state">
+                <svg class="empty-state__icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path>
+                    <line x1="16" y1="8" x2="2" y2="22"></line>
+                    <line x1="17.5" y1="15" x2="9" y2="15"></line>
+                </svg>
+                <p class="empty-state__text">No favorites yet. Click the star on a scenario to add it here.</p>
+            </div>
+        `;
+	}
+
+	// Always show the favorites section
+	elements.favoritesList.closest('.favorites').style.display = 'block';
+
+	// Handle all scenarios section
+	const displayScenarios = showFavoritesOnly ? [] : scenarios;
+
+	if (displayScenarios.length === 0) {
+		elements.scenarioButtons.innerHTML = `
+            <div class="empty-state">
+                <svg class="empty-state__icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="9" y1="12" x2="15" y2="12"></line>
+                    <line x1="12" y1="9" x2="12" y2="15"></line>
+                </svg>
+                <p class="empty-state__text">
+                    ${showFavoritesOnly ? 'No favorite scenarios. Mark some as favorites to see them here!' : 'No scenarios available. Create one to get started!'}
+                </p>
+            </div>`;
+		return;
+	}
+
+	elements.scenarioButtons.innerHTML = displayScenarios.map(s => `
+        <div class="scenario-item">
+            <button class="scenario-btn ${s.id === currentScenarioId ? 'active' : ''}" data-id="${s.id}" aria-label="${s.title}">
+                <span class="scenario-btn__title">${truncateText(s.title, 18)}</span>
+                <span class="scenario-btn__favorite" aria-hidden="true">${s.favorite ? '★' : ''}</span>
+            </button>
+            <button class="scenario-delete" data-id="${s.id}" aria-label="Delete scenario">×</button>
+        </div>
+    `).join('');
 }
 
 function truncateText(text, maxLength) {
@@ -492,31 +550,124 @@ function updateActiveButtons() {
 	elements.scenarioSelect.value = currentScenarioId;
 }
 
+function toggleFavorite() {
+	if (!currentScenarioId) return;
+
+	const scenario = scenarios.find(s => s.id === currentScenarioId);
+	if (!scenario) return;
+
+	// Toggle favorite status
+	scenario.favorite = !scenario.favorite;
+	scenario.lastUpdated = new Date().toISOString();
+
+	// Update UI
+	updateFavButton(scenario.favorite);
+	renderScenarioButtons();
+	saveScenarios();
+
+	// Show notification
+	const notification = document.createElement('div');
+	notification.className = 'notification';
+	notification.textContent = scenario.favorite ? 'Added to favorites' : 'Removed from favorites';
+	document.body.appendChild(notification);
+
+	setTimeout(() => {
+		notification.classList.add('show');
+		setTimeout(() => {
+			notification.classList.remove('show');
+			setTimeout(() => notification.remove(), 300);
+		}, 2000);
+	}, 10);
+}
+
+function removeScenario(id) {
+	if (!confirm('Are you sure you want to delete this scenario? This cannot be undone.')) {
+		return;
+	}
+
+	const index = scenarios.findIndex(s => s.id === id);
+	if (index === -1) return;
+
+	// If deleting the current scenario, select a new one
+	if (currentScenarioId === id) {
+		const newIndex = index > 0 ? index - 1 : scenarios.length > 1 ? 1 : -1;
+		currentScenarioId = newIndex !== -1 ? scenarios[newIndex].id : null;
+	}
+
+	// Remove the scenario
+	scenarios.splice(index, 1);
+	saveScenarios();
+
+	// Update UI
+	renderScenarioSelect();
+	renderScenarioButtons();
+
+	if (currentScenarioId) {
+		selectScenario(currentScenarioId);
+	} else if (scenarios.length > 0) {
+		selectScenario(scenarios[0].id);
+	} else {
+		// No scenarios left
+		elements.scenarioTitle.textContent = 'No Scenarios';
+		elements.scenarioSeed.textContent = '';
+		elements.sectionCards.innerHTML = '';
+	}
+}
+
 function updateStats() {
 	elements.totalCount.textContent = scenarios.length;
 	elements.favCount.textContent = scenarios.filter(s => s.favorite).length;
 }
 
 function setupEventListeners() {
+	// Search functionality
 	elements.searchInput.addEventListener('input', e => renderScenarioSelect(e.target.value));
-	elements.scenarioSelect.addEventListener('change', e => selectScenario(e.target.value));
-	elements.scenarioButtons.addEventListener('click', e => {
-		if (e.target.classList.contains('scenario-btn')) {
-			selectScenario(e.target.dataset.id);
-		}
-	});
 
+	// Scenario selection
+	elements.scenarioSelect.addEventListener('change', e => selectScenario(e.target.value));
+
+	// Click handlers for scenario buttons in both sections
+	const handleScenarioClick = (e) => {
+		const btn = e.target.closest('.scenario-btn');
+		if (btn) {
+			selectScenario(btn.dataset.id);
+		}
+	};
+
+	elements.scenarioButtons.addEventListener('click', handleScenarioClick);
+	elements.favoritesList.addEventListener('click', handleScenarioClick);
+
+	// Restore favorites section visibility from localStorage
+	const showFavorites = localStorage.getItem('showFavorites') !== 'false';
+	const favoritesSection = elements.favoritesList.closest('.favorites');
+	favoritesSection.style.display = showFavorites ? 'block' : 'none';
+
+	// AI generation
 	elements.generateBtn.addEventListener('click', () => {
 		elements.aiApiKey.value = localStorage.getItem(AI_KEY_STORAGE) || '';
 		openModal('aiModal');
 	});
 
+	// Import/Export
 	elements.exportBtn.addEventListener('click', exportScenarios);
 	elements.importBtn.addEventListener('click', () => elements.importFile.click());
 	elements.importFile.addEventListener('change', importScenarios);
-	elements.favToggle.addEventListener('click', toggleFavorite);
+
+	// Modal controls
 	elements.cancelAiModal.addEventListener('click', () => closeModal('aiModal'));
 	elements.generateAi.addEventListener('click', handleGenerateAi);
+
+	// Favorite toggle
+	elements.favToggle.addEventListener('click', toggleFavorite);
+
+	// Handle delete button clicks
+	document.addEventListener('click', (e) => {
+		const deleteBtn = e.target.closest('.scenario-delete');
+		if (deleteBtn) {
+			e.stopPropagation();
+			removeScenario(deleteBtn.dataset.id);
+		}
+	});
 }
 
 function openModal(id) {
@@ -530,16 +681,6 @@ function closeModal(id) {
 function showLoading(show) {
 	elements.loadingOverlay.classList.toggle('hidden', !show);
 }
-
-function toggleFavorite() {
-	const scenario = scenarios.find(s => s.id === currentScenarioId);
-	if (scenario) {
-		scenario.favorite = !scenario.favorite;
-		saveScenarios();
-		updateFavButton(scenario.favorite);
-	}
-}
-
 
 function handleGenerateAi() {
 	const prompt = elements.aiPrompt.value.trim();
