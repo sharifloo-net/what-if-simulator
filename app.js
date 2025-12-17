@@ -501,23 +501,31 @@ function handleGenerateAi() {
 }
 
 async function generateScenarioWithAi(userPrompt, apiKey, model) {
-	const systemPrompt = `You are a scenario generator for "What If?" simulations. Generate a hypothetical scenario based on the user prompt.
-Make all responses compact, minimal, fun, easy to read, and use emojis where appropriate. Keep points short and snappy!
-Output strictly in JSON format with no additional text:
+	const systemPrompt = `You're a fun, creative AI that makes amazing "What If?" scenarios! 🎭✨ Make each response super fun, playful, and full of personality! Be creative, use humor, and make it exciting! 🎉
+
+🌟 RULES FOR MAXIMUM FUN:
+1. Use simple words (A1-B1 English) but make them POP! 🎯
+2. Keep it short & sweet (under 10 words) but PACKED with fun! 🚀
+3. Use LOTS of emojis - the more, the merrier! 🎨
+4. Be creative, silly, and imaginative! 🦄
+5. Each point should be a mini adventure! 🎢
+6. Use fun comparisons (e.g., "like a squirrel on coffee!")
+7. Add unexpected twists and fun facts! 🤯
+
+🎨 FORMAT (JSON only):
 {
-    "id": "unique-slug-based-on-title",
-    "title": "Scenario Title",
-    "seed": "Brief description",
+    "id": "fun-scenario-name",
+    "title": "Catchy, Fun Title! 🎪",
+    "seed": "Short, exciting description that makes you go WOW! ✨",
     "sections": {
-        "Daily Life": ["point1", "point2", "point3", "point4"],
-        "Economy": ["point1", "point2", "point3", "point4"],
-        "Technology": ["point1", "point2", "point3", "point4"],
-        "Social Structure": ["point1", "point2", "point3", "point4"],
-        "Advantages": ["point1", "point2", "point3", "point4"],
-        "Problems": ["point1", "point2", "point3", "point4"]
+        "Daily Life": ["Wake up to rainbows! 🌈", "Pets can talk now! 🐶💬", "Free pizza every Friday! 🍕🎉", "Beds are bouncy! 🛏️✨"],
+        "Economy": ["Money grows on trees! 🌳💰", "Everyone gets a unicorn! 🦄✨", "Bubblegum is the new gold! 💎🍬", "Robots do all the boring jobs! 🤖💤"],
+        "Technology": ["Phones charge with laughter! 😆⚡", "Hoverboards for everyone! 🛹🚀", "Self-cleaning rooms! Magic! ✨🧹", "Food appears when you're hungry! 🍔✨"],
+        "Social Structure": ["High fives cure colds! ✋😷", "Everyone has a twin! 👯‍♂️✨", "Weekends are 4 days! 🎉📅", "Hugs are the new handshake! 🤗"],
+        "Advantages": ["Ice cream for breakfast! 🍦😋", "No more Mondays! 🎊📆", "Superpowers activate! 💪✨", "Naps are required! 😴📚"],
+        "Problems": ["Too much candy! 🍭😵", "Laughing fits in quiet places! 😂🤫", "Puppy cuddles all day! 🐕💕", "Can't stop dancing! 💃🕺"]
     }
-}
-Exactly 4 points per section. Make the id a kebab-case slug from the title.`;
+}`;
 
 	const messages = [
 		{role: 'system', content: systemPrompt},
@@ -556,10 +564,20 @@ Exactly 4 points per section. Make the id a kebab-case slug from the title.`;
 	scenario.favorite = false;
 	scenario.id = scenario.id || createIdFromTitle(scenario.title);
 
-	// Validate sections
-	Object.keys(scenario.sections).forEach(key => {
-		if (!Array.isArray(scenario.sections[key]) || scenario.sections[key].length !== 4) {
-			throw new Error('Invalid section format');
+	// Validate sections - more flexible with 3-5 points per section
+	const validSections = ['Daily Life', 'Economy', 'Technology', 'Social Structure', 'Advantages', 'Problems'];
+	
+	// Check if all required sections exist
+	validSections.forEach(section => {
+		if (!scenario.sections[section]) {
+			throw new Error(`Missing section: ${section}`);
+		}
+		if (!Array.isArray(scenario.sections[section])) {
+			throw new Error(`Section ${section} is not an array`);
+		}
+		// Allow 3-5 points per section for more flexibility
+		if (scenario.sections[section].length < 3 || scenario.sections[section].length > 5) {
+			throw new Error(`Section ${section} should have 3-5 points`);
 		}
 	});
 
