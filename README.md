@@ -1,5 +1,7 @@
 # What If? Simulator
 
+[![Live Demo](https://img.shields.io/badge/demo-live-green.svg)](https://sharifloo-net.github.io/what-if-simulator/)
+
 ## Overview
 A Progressive Web App (PWA) that explores hypothetical "What If?" scenarios and their structured consequences of six key categories: Daily Life, Economy, Technology, Social Structure, Advantages, and Problems. The application allows users to explore preloaded scenarios, create custom ones, and even generate new scenarios using AI.
 
