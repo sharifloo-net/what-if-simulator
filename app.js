@@ -385,7 +385,6 @@ const elements = {
 	searchInput: document.getElementById('searchInput'),
 	scenarioSelect: document.getElementById('scenarioSelect'),
 	scenarioButtons: document.getElementById('scenarioButtons'),
-	createBtn: document.getElementById('createBtn'),
 	generateBtn: document.getElementById('generateBtn'),
 	exportBtn: document.getElementById('exportBtn'),
 	importBtn: document.getElementById('importBtn'),
@@ -399,11 +398,6 @@ const elements = {
 	totalCount: document.getElementById('totalCount'),
 	favCount: document.getElementById('favCount'),
 	offlineIndicator: document.getElementById('offlineIndicator'),
-	customModal: document.getElementById('customModal'),
-	customTitle: document.getElementById('customTitle'),
-	customSeed: document.getElementById('customSeed'),
-	cancelModal: document.getElementById('cancelModal'),
-	saveCustom: document.getElementById('saveCustom'),
 	aiModal: document.getElementById('aiModal'),
 	aiPrompt: document.getElementById('aiPrompt'),
 	aiApiKey: document.getElementById('aiApiKey'),
@@ -511,17 +505,16 @@ function setupEventListeners() {
 			selectScenario(e.target.dataset.id);
 		}
 	});
-	elements.createBtn.addEventListener('click', () => openModal('customModal'));
+
 	elements.generateBtn.addEventListener('click', () => {
 		elements.aiApiKey.value = localStorage.getItem(AI_KEY_STORAGE) || '';
 		openModal('aiModal');
 	});
+
 	elements.exportBtn.addEventListener('click', exportScenarios);
 	elements.importBtn.addEventListener('click', () => elements.importFile.click());
 	elements.importFile.addEventListener('change', importScenarios);
 	elements.favToggle.addEventListener('click', toggleFavorite);
-	elements.cancelModal.addEventListener('click', () => closeModal('customModal'));
-	elements.saveCustom.addEventListener('click', saveCustomScenario);
 	elements.cancelAiModal.addEventListener('click', () => closeModal('aiModal'));
 	elements.generateAi.addEventListener('click', handleGenerateAi);
 }
@@ -547,30 +540,6 @@ function toggleFavorite() {
 	}
 }
 
-function saveCustomScenario() {
-	const title = elements.customTitle.value.trim();
-	const seed = elements.customSeed.value.trim();
-	if (!title || !seed) {
-		alert('Please fill in title and description');
-		return;
-	}
-
-	const newScenario = {
-		id: createIdFromTitle(title),
-		title,
-		seed,
-		sections: SECTION_NAMES.reduce((acc, name) => ({...acc, [name]: []}), {}),
-		lastUpdated: new Date().toISOString(),
-		favorite: false
-	};
-
-	scenarios.push(newScenario);
-	saveScenarios();
-	renderScenarioSelect();
-	renderScenarioButtons();
-	selectScenario(newScenario.id);
-	closeModal('customModal');
-}
 
 function handleGenerateAi() {
 	const prompt = elements.aiPrompt.value.trim();
