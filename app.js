@@ -303,14 +303,27 @@ function selectScenario(id) {
 }
 
 function renderSectionCards(sections) {
-	elements.sectionCards.innerHTML = SECTION_NAMES.map(name => `
-        <div class="section-card">
-            <h3 class="section-card__title">${name}</h3>
-            <ul class="section-card__list">
-                ${sections[name] ? sections[name].map(point => `<li>${point}</li>`).join('') : '<li>No data available</li>'}
-            </ul>
-        </div>
-    `).join('');
+    // Ensure section titles in the UI are always in English
+    const sectionMapping = {
+        'زندگی روزمره': 'Daily Life',
+        'اقتصاد': 'Economy',
+        'فناوری': 'Technology',
+        'ساختار اجتماعی': 'Social Structure',
+        'مزایا': 'Advantages',
+        'مشکلات': 'Problems'
+    };
+
+    elements.sectionCards.innerHTML = SECTION_NAMES.map(name => {
+        const points = sections[name] || sections[Object.keys(sectionMapping).find(key => sectionMapping[key] === name)];
+        return `
+            <div class="section-card">
+                <h3 class="section-card__title">${name}</h3>
+                <ul class="section-card__list">
+                    ${points ? points.map(point => `<li>${point}</li>`).join('') : '<li>No data available</li>'}
+                </ul>
+            </div>
+        `;
+    }).join('');
 }
 
 function updateFavButton(isFavorite) {
@@ -486,13 +499,7 @@ function handleGenerateAi() {
 		})
 		.catch(error => {
 			console.error('AI generation failed:', error);
-			alert(`Generation failed: ${error.message}. Check console for details. Using fallback.`);
-			const fallbackScenario = generateFallbackScenario(prompt);
-			scenarios.push(fallbackScenario);
-			saveScenarios();
-			renderScenarioSelect();
-			renderScenarioButtons();
-			selectScenario(fallbackScenario.id);
+			alert(`Generation failed: ${error.message}. Check console for details.`);
 		})
 		.finally(() => {
 			showLoading(false);
@@ -501,111 +508,115 @@ function handleGenerateAi() {
 }
 
 async function generateScenarioWithAi(userPrompt, apiKey, model) {
-	const systemPrompt = `You're a fun, creative AI that makes amazing "What If?" scenarios! 🎭✨ Make each response super fun, playful, and full of personality! Be creative, use humor, and make it exciting! 🎉
+    const isPersian = /[\u0600-\u06FF]/.test(userPrompt); // Check if input contains Persian characters
 
-🌟 RULES FOR MAXIMUM FUN:
-1. Use simple words (A1-B1 English) but make them POP! 🎯
-2. Keep it short & sweet (under 10 words) but PACKED with fun! 🚀
-3. Use LOTS of emojis - the more, the merrier! 🎨
-4. Be creative, silly, and imaginative! 🦄
-5. Each point should be a mini adventure! 🎢
-6. Use fun comparisons (e.g., "like a squirrel on coffee!")
-7. Add unexpected twists and fun facts! 🤯
+    const systemPrompt = isPersian
+        ? `شما یک هوش مصنوعی خلاق و سرگرم‌کننده هستید که سناریوهای "چه می‌شد اگر؟" را به زبان فارسی تولید می‌کنید! 🎭✨
+دستورالعمل‌ها:
+- فقط یک شیء JSON معتبر مطابق با فرمت زیر تولید کنید.
+- نام بخش‌ها را تغییر ندهید و هیچ بخشی را حذف نکنید.
+- بسیار مهم: هر بخش باید ۳ تا ۵ نکته داشته باشد.
+- از ایموجی‌ها برای جذاب‌تر کردن پاسخ‌ها استفاده کنید. 😄✨
+- پاسخ‌ها باید خلاقانه، هیجان‌انگیز و حتی کمی طنزآمیز باشند.
+- از زبان جذاب و سرگرم‌کننده استفاده کنید.
+- پاسخ‌ها کوتاه، مفید و مختصر، و در عین حال جذاب باشند.
+- لطفاً دقیقاً از این فرمت و استایل پیروی کنید.
 
-🎨 FORMAT (JSON only):
+فرمت پاسخ:
 {
-    "id": "fun-scenario-name",
-    "title": "Catchy, Fun Title! 🎪",
-    "seed": "Short, exciting description that makes you go WOW! ✨",
+    "id": "نام-سناریو",
+    "title": "عنوان جذاب",
+    "seed": "توضیح کوتاه",
     "sections": {
-        "Daily Life": ["Wake up to rainbows! 🌈", "Pets can talk now! 🐶💬", "Free pizza every Friday! 🍕🎉", "Beds are bouncy! 🛏️✨"],
-        "Economy": ["Money grows on trees! 🌳💰", "Everyone gets a unicorn! 🦄✨", "Bubblegum is the new gold! 💎🍬", "Robots do all the boring jobs! 🤖💤"],
-        "Technology": ["Phones charge with laughter! 😆⚡", "Hoverboards for everyone! 🛹🚀", "Self-cleaning rooms! Magic! ✨🧹", "Food appears when you're hungry! 🍔✨"],
-        "Social Structure": ["High fives cure colds! ✋😷", "Everyone has a twin! 👯‍♂️✨", "Weekends are 4 days! 🎉📅", "Hugs are the new handshake! 🤗"],
-        "Advantages": ["Ice cream for breakfast! 🍦😋", "No more Mondays! 🎊📆", "Superpowers activate! 💪✨", "Naps are required! 😴📚"],
-        "Problems": ["Too much candy! 🍭😵", "Laughing fits in quiet places! 😂🤫", "Puppy cuddles all day! 🐕💕", "Can't stop dancing! 💃🕺"]
+        "زندگی روزمره": ["نکته ۱", "نکته ۲", "نکته ۳"],
+        "اقتصاد": ["نکته ۱", "نکته ۲", "نکته ۳"],
+        "فناوری": ["نکته ۱", "نکته ۲", "نکته ۳"],
+        "ساختار اجتماعی": ["نکته ۱", "نکته ۲", "نکته ۳"],
+        "مزایا": ["نکته ۱", "نکته ۲", "نکته ۳"],
+        "مشکلات": ["نکته ۱", "نکته ۲", "نکته ۳"]
+    }
+}`
+        : `You are a creative and fun AI that generates "What If?" scenarios! 🎭✨
+Instructions:
+- Output ONLY valid JSON in the format below.
+- Do NOT rename or omit any sections.
+- Very important: each section must have 3-5 points.
+- Use emojis to make responses engaging. 😄✨
+- Make the answers fun, creative, exciting, and even a little humorous.
+- Use engaging and entertaining language.
+- Answer should be short, useful, concise, yet engaging.
+- Please follow the format exactly.
+Response format:
+{
+    "id": "scenario-name",
+    "title": "Catchy Title",
+    "seed": "Short description",
+    "sections": {
+        "Daily Life": ["Point 1", "Point 2", "Point 3"],
+        "Economy": ["Point 1", "Point 2", "Point 3"],
+        "Technology": ["Point 1", "Point 2", "Point 3"],
+        "Social Structure": ["Point 1", "Point 2", "Point 3"],
+        "Advantages": ["Point 1", "Point 2", "Point 3"],
+        "Problems": ["Point 1", "Point 2", "Point 3"]
     }
 }`;
 
-	const messages = [
-		{role: 'system', content: systemPrompt},
-		{role: 'user', content: `Generate scenario for: ${userPrompt}`}
-	];
+    const messages = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: `Generate scenario for: ${userPrompt}` }
+    ];
 
-	const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			'Authorization': `Bearer ${apiKey}`
-		},
-		body: JSON.stringify({
-			model,
-			messages,
-			temperature: 0.7,
-			max_tokens: 2000
-		})
-	});
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+            model,
+            messages,
+            temperature: 0.8, // Increase temperature for more creative responses
+            max_tokens: 2000
+        })
+    });
 
-	if (!response.ok) {
-		throw new Error(`API error: ${response.status} - ${await response.text()}`);
-	}
+    if (!response.ok) {
+        throw new Error(`API error: ${response.status} - ${await response.text()}`);
+    }
 
-	const data = await response.json();
-	const content = data.choices[0].message.content.trim();
+    const data = await response.json();
+    const content = data.choices[0].message.content.trim();
 
-	// Extract JSON if wrapped in markdown or extra text
-	const jsonMatch = content.match(/\{[\s\S]*\}/);
-	if (!jsonMatch) {
-		throw new Error('Invalid JSON response');
-	}
+    // Extract JSON if wrapped in markdown or extra text
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+        throw new Error('Invalid JSON response');
+    }
 
-	const scenario = JSON.parse(jsonMatch[0]);
-	scenario.lastUpdated = new Date().toISOString();
-	scenario.favorite = false;
-	scenario.id = scenario.id || createIdFromTitle(scenario.title);
+    const scenario = JSON.parse(jsonMatch[0]);
+    scenario.lastUpdated = new Date().toISOString();
+    scenario.favorite = false;
+    scenario.id = scenario.id || createIdFromTitle(scenario.title);
 
-	// Validate sections - more flexible with 3-5 points per section
-	const validSections = ['Daily Life', 'Economy', 'Technology', 'Social Structure', 'Advantages', 'Problems'];
-	
-	// Check if all required sections exist
-	validSections.forEach(section => {
-		if (!scenario.sections[section]) {
-			throw new Error(`Missing section: ${section}`);
-		}
-		if (!Array.isArray(scenario.sections[section])) {
-			throw new Error(`Section ${section} is not an array`);
-		}
-		// Allow 3-5 points per section for more flexibility
-		if (scenario.sections[section].length < 3 || scenario.sections[section].length > 5) {
-			throw new Error(`Section ${section} should have 3-5 points`);
-		}
-	});
+    // Validate sections - ensure all required sections exist with 3-5 points
+    const requiredSections = isPersian
+        ? ['زندگی روزمره', 'اقتصاد', 'فناوری', 'ساختار اجتماعی', 'مزایا', 'مشکلات']
+        : ['Daily Life', 'Economy', 'Technology', 'Social Structure', 'Advantages', 'Problems'];
+    requiredSections.forEach(section => {
+        if (!scenario.sections[section]) {
+            throw new Error(`Missing section: ${section}`);
+        }
+        if (!Array.isArray(scenario.sections[section])) {
+            throw new Error(`Section ${section} is not an array`);
+        }
+        if (scenario.sections[section].length < 3 || scenario.sections[section].length > 5) {
+            throw new Error(`Section ${section} must have 3-5 points`);
+        }
+    });
 
-	return scenario;
+    return scenario;
 }
 
-function generateFallbackScenario(prompt) {
-	const title = `Fallback: ${prompt}`;
-	const id = createIdFromTitle(title);
-	const seed = prompt;
-	const sections = {};
-	SECTION_NAMES.forEach(section => {
-		sections[section] = [
-			`Placeholder point 1 for ${section.toLowerCase()} 😊`,
-			`Placeholder point 2 for ${section.toLowerCase()} 🚀`,
-			`Placeholder point 3 for ${section.toLowerCase()} 🌟`,
-			`Placeholder point 4 for ${section.toLowerCase()} ⚡`
-		];
-	});
-	return {
-		id,
-		title,
-		seed,
-		sections,
-		lastUpdated: new Date().toISOString(),
-		favorite: false
-	};
-}
 
 function createIdFromTitle(title) {
 	return title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
